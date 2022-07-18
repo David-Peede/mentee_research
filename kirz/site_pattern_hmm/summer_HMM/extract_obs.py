@@ -44,12 +44,15 @@ def extract_O(variable_positions, polarized_genotype_matrix):
     # Load the mutated tree sequence.
     # rep_id_1_mts = tskit.load('./cs282_sim_data/rep_id_1_mut_tree_seq.ts')
     # Load the variable positions.
-    rep_id_1_var_pos = np.loadtxt('../cs282_sim_data/three_pop_1_var_pos.csv.gz', delimiter=',')
+    rep_id_1_var_pos = np.loadtxt(
+        '../../../../../Temporary Storage for Updated Summer HMM/cs282_sim_data/rep_id_1_var_pos.csv.gz', delimiter=',')
     # Load the genotype matrix.
-    rep_id_1_polarized_geno_mat = np.loadtxt('../cs282_sim_data/three_pop_1_polarized_geno_mat.csv.gz', dtype=int,
-                                             delimiter=',')
+    rep_id_1_polarized_geno_mat = np.loadtxt(
+        '../../../../../Temporary Storage for Updated Summer HMM/cs282_sim_data/rep_id_1_geno_mat.csv.gz', dtype=int,
+        delimiter=',')
     # Load the introgressed region dataframe.
-    rep_id_1_intro_pos_df = pd.read_csv('../cs282_sim_data/three_pop_1_intro_pos.csv.gz', float_precision='round_trip')
+    rep_id_1_intro_pos_df = pd.read_csv(
+        '../../../../../Temporary Storage for Updated Summer HMM/cs282_sim_data/rep_id_1_intro_pos.csv.gz', float_precision='round_trip')
     # Inspect the tree-sequence summary.
     # rep_id_1_mts
 

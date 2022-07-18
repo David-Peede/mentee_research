@@ -1,5 +1,15 @@
 import sys
 import numpy as np
+try:
+    logaddexp = np.logaddexp
+except AttributeError:
+    def logaddexp(logx, logy):
+        if logy - logx > 100:
+            return logy
+        elif logx - logy > 100:
+            return logx
+        minxy = min(logx, logy)
+        return minxy + np.log(np.exp(logx - minxy) + np.exp(logy - minxy))
 
 
 # SUPPORT CODE
@@ -65,3 +75,20 @@ def print_results(A, B, pi, Ob, N, T, logP_new):
     print('logP(O|lambda): {0:.2f}'.format(logP_new),
           ''.join([str(i) for i in Q]),
           'logP(O|Q*): {0:.2f}'.format(logP_max))
+
+def logsum(matrix):
+    #Implement logsum for a matrix object
+    if len(matrix.shape) > 1:
+        vec = np.reshape(matrix, (np.product(matrix.shape),))
+    else:
+        vec = matrix
+    # TODO: SUM IS WHATEVER LOG 0 IS
+    sum = np.NINF
+    for num in vec:
+        sum = logaddexp(sum, num)
+    return sum
+
+def exp_logsum(numbers):
+    #Return the exponential of a logsum
+    sum = logsum(numbers)
+    return np.exp(sum)
