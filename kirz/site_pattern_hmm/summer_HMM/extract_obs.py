@@ -41,27 +41,39 @@ def genotype_matrix_windows(
 # Output: the observed sequence and a dictionary containing information about it
 def extract_O(variable_positions, polarized_genotype_matrix):
 
+    var_pos = variable_positions
+    pol_geno_mat = polarized_genotype_matrix
+
+
+    # TODO: OLD, HARDCODED INSTRUCTIONS
     # Load the mutated tree sequence.
     # rep_id_1_mts = tskit.load('./cs282_sim_data/rep_id_1_mut_tree_seq.ts')
     # Load the variable positions.
-    rep_id_1_var_pos = np.loadtxt(
-        '../../../../../Temporary Storage for Updated Summer HMM/cs282_sim_data/rep_id_1_var_pos.csv.gz', delimiter=',')
+    # rep_id_1_var_pos = np.loadtxt('../cs282_sim_data/rep_id_1_var_pos.csv.gz', delimiter=',')
     # Load the genotype matrix.
-    rep_id_1_polarized_geno_mat = np.loadtxt(
-        '../../../../../Temporary Storage for Updated Summer HMM/cs282_sim_data/rep_id_1_geno_mat.csv.gz', dtype=int,
-        delimiter=',')
+    # rep_id_1_polarized_geno_mat = np.loadtxt('../cs282_sim_data/rep_id_1_geno_mat.csv.gz', dtype=int,delimiter=',')
     # Load the introgressed region dataframe.
-    rep_id_1_intro_pos_df = pd.read_csv(
-        '../../../../../Temporary Storage for Updated Summer HMM/cs282_sim_data/rep_id_1_intro_pos.csv.gz', float_precision='round_trip')
+    # rep_id_1_intro_pos_df = pd.read_csv('../cs282_sim_data/rep_id_1_intro_pos.csv.gz', float_precision='round_trip')
     # Inspect the tree-sequence summary.
     # rep_id_1_mts
+
+
+    # TODO: NON-HARDCODED
+    var_pos = np.loadtxt(var_pos, delimiter=',')
+    # Load the genotype matrix.
+    pol_geno_mat = np.loadtxt(pol_geno_mat, dtype=int, delimiter=',')
+    # Load the introgressed region dataframe.
+    true_intro_pos = pd.read_csv('../cs282_sim_data/rep_id_1_intro_pos.csv.gz', float_precision='round_trip')
+
+
+
 
     # Typically 50k long
     # print(rep_id_1_var_pos)
     # print(rep_id_1_polarized_geno_mat)
 
     # Indexed from 1 - 400
-    Windows = genotype_matrix_windows(rep_id_1_var_pos, rep_id_1_polarized_geno_mat, window_size=500)
+    Windows = genotype_matrix_windows(var_pos, pol_geno_mat, window_size=500)
 
     #print(Windows[1])
     #print(len(Windows[1])-2)
@@ -80,7 +92,7 @@ def extract_O(variable_positions, polarized_genotype_matrix):
 
     # Intialize observed sequence.
     obs_seq = []
-    # Define what C would look like.
+    # Define what C, a pattern consistent with introgression, would look like.
     c_pattern = np.array([0, 0, 1, 1])
     # Intialize the start time.
     start = time.time()
@@ -95,12 +107,12 @@ def extract_O(variable_positions, polarized_genotype_matrix):
             # Extract variable positions in that window. [2:] excludes start pos and end pos
             variants = np.asarray(window_vals[2:], dtype=np.int32)
             # Subset the genotype matrix for that window.
-            window_geno_mat = rep_id_1_polarized_geno_mat[variants,:]
+            window_geno_mat = pol_geno_mat[variants,:]
             print(window_geno_mat)
             # Define what C matrix would look like given an arbitrary number of variants.
             c_mat = np.tile(c_pattern, (window_geno_mat.shape[0], 1))
             # If the C matrix is equal to the windowed matrix declare it consistent.
-            if np.array_equal(c_mat, window_geno_mat) == True:
+            if np.array_equal(c_mat, window_geno_mat):
                 print('C')
                 obs_seq.append('C')
             # Else declare the window non-cosistent.
@@ -124,9 +136,8 @@ def extract_O(variable_positions, polarized_genotype_matrix):
 
     # throw vp and pgm into genotype_matrix_windows
 
-    O = 'NCNCN'
+    O = obs_seq_array
     Bin_dict = {}
-    print("test")
     return O, Bin_dict
 
 

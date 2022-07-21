@@ -127,8 +127,6 @@ def calc_beta(A, B, Ob, N, T):
 
 def calc_xi(A, B, Ob, N, T, alpha, beta):
     xi = np.zeros((T, N, N))
-    print("START")
-    print("---------------------")
     for t in range(T):
         k = Ob[t]
         lp_traverse = np.zeros((N, N))
@@ -257,12 +255,11 @@ def hmm(i_loci, i_ancestries):
     # We begin by extracting the sequence:
     # NOTE: The function extract_O typically takes in (variable positions, polarized genotype matrix)
     # Here, for testing's sake, the function is hardcoded with dummy arguments 1 and 2.
-    # TODO: Later, they will be switched to loci and ancestries (???)
-    extraction = extract_obs.extract_O(1, 2)
+    extraction = extract_obs.extract_O(loci, ancestries)
 
     # extraction is a tuple made up of an Observation Sequence, which is a string of letters ("NNC..CN")...
     O = extraction[0]
-    O = "NNCCN"  # Dummy Observed Sequence for testing/explanation
+    # O = "NNCCN"  # Dummy Observed Sequence for testing/explanation
     # ... and Win_intro_percent, a Dictionary of 500bp-bins and their contents that I included to keep track of the true
     # introgression state windows, and how "covered" each is by introgressed segments. This is crucial for evaluation.
     # It has the structure (Window # -> Percentage of Introgression)
