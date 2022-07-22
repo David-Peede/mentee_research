@@ -221,10 +221,12 @@ def update_pi(N, gamma):
 #   loci, a list of variant positions measured in kb
 #   ancestries, a list of haplotype lists from 4 ancestries (AFR1, AFR2, TEST, NEAN) with 1s (derived) / 0s (ancestral)
 # Output:
+#   o_results: name of text file
 #   TODO: Explain
-def hmm(i_loci, i_ancestries):
+def hmm(i_loci, i_ancestries, o_results):
     loci = i_loci
     ancestries = i_ancestries
+
 
     # PRÜFER'S PARAMETERS
     # Ancestral switch rate
@@ -476,7 +478,7 @@ def hmm(i_loci, i_ancestries):
 
     # Writing to output textfile
 
-    results_txt = "results_test.txt"
+    results_txt = o_results
     with open(results_txt, 'w') as out:
 
         # TODO: Complex regex for deriving the rep id number from the filepath loci
@@ -493,7 +495,7 @@ def hmm(i_loci, i_ancestries):
                                                                                                    / float(60)) + '\n')
 
         # TODO: Windows with >90%  chance of being introgressed according to HMM
-        
+
 
 
         # TODO: True Introgressed Windows
