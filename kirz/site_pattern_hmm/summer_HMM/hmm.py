@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import extract_obs
 import support_code as supp
+import time
 # Commented out when we don't need to use performance visualization
 # import visualizer as vis
 # import eval_accuracy as eval
@@ -115,10 +116,10 @@ def calc_beta(A, B, Ob, N, T):
             lprob = log_zero
             for i in range(N):
                 lp = beta[t + 1][i] + A[j][i] + B[j][k]
-            #    print(np.exp(lprob))
-            #    print(np.exp(lp))
-            #    print(np.exp(lprob) + np.exp(lp))
-            #    print('--------------------')
+                #    print(np.exp(lprob))
+                #    print(np.exp(lp))
+                #    print(np.exp(lprob) + np.exp(lp))
+                #    print('--------------------')
                 lprob = logaddexp(lprob, lp)
             # print('--------------------')
             beta[t][j] = lprob
@@ -243,6 +244,8 @@ def hmm(i_loci, i_ancestries):
     M = 2
     # Log-likelihood convergence threshold - used to tell when Baum-Welch has gone far enough
     convergence_threshold = 0.01
+    # Intialize the start time.
+    start = time.time()
 
     # KIRZ's PARAMETERS (not specified by Prüfer)
     # Should results be normalized based on relative probability? Prüfer leaves this unclear
@@ -278,6 +281,8 @@ def hmm(i_loci, i_ancestries):
     observations = ['N', 'C']
     # Ob is the same as the observation sequence, but with 'N'-> 0 and 'C'-> 1 for quick referencing.
     Ob = [observations.index(label) for label in O]
+    # Stage 1: Checkpoint that marks time after windows binned / sequence generated
+    stage1 = time.time()
 
     # SETTING UP THE HMM
 
@@ -307,11 +312,14 @@ def hmm(i_loci, i_ancestries):
     xi = calc_xi(lp_A, lp_B, Ob, N, T, alpha, beta)
     gamma = calc_gamma(xi, N, T)
 
+    # Stage 2: Checkpoint that marks time Naive HMM matrices have been generated
+    stage2 = time.time()
+
+    # BAUM-WELCH OPTIMIZATION
+
     # Initializing a dictionary of gammas: this will allow the comparison of estimated likelihoods over rounds of B/W
     # It has the structure (current_optimization or algorithm step number -> tuple (gamma matrix, performance))
     All_gammas = {}
-
-    # BAUM-WELCH OPTIMIZATION
 
     optimization_count = 0
     # Iterate until convergence is reached between results, performance decreases, or the hard cap is met
@@ -350,6 +358,9 @@ def hmm(i_loci, i_ancestries):
         if supp.logsum(bw_alpha[T, :]) > logP_old:
             lp_A, lp_B, lp_pi = new_A, new_B, new_pi
             logP_new = supp.logsum(bw_alpha[T, :])
+
+    # Stage 3: Checkpoint that marks time after B-W is complete
+    stage3 = time.time()
 
     # check to see if there was any improvement
     if optimization_count > 0:
@@ -435,19 +446,18 @@ def hmm(i_loci, i_ancestries):
     # print("False Postive Rate, False Negative Rate, True Positive Rate (Sensitivity), True Negative Rate (Specificity)")
 
     # # Commented code here used to export the gamma matrix for the purposes of displaying it
-    # np.savetxt(
-    #     '/Users/briankirz/Downloads/temp_gamma_matrix.csv.gz',
-    #     gamma,
+    # TODO: not showing up for some reason
+    np.savetxt(
+        '/Users/briankirz/Downloads/temp_gamma_matrix.csv.gz',
+        np.exp(gamma),
+        fmt='%1.3f',
+        delimiter=',',
+    )
 
     # list = [tp, tn, fp, fn]
     # np.asarray(list)
     # make sure this is a numpy array
     # list = np.array[list]
-
-    #
-    #     fmt='%1.3f',
-    #     delimiter=',',
-    # )
 
     # TESTING ROUNDING ERRORS
     # print(np.exp(alpha[0][0]))
@@ -463,6 +473,36 @@ def hmm(i_loci, i_ancestries):
     # print(np.exp(alpha[3][1]))
     # print(np.exp(alpha[4][1]))
     # print(np.exp(alpha[5][1]))
+
+    # Writing to output textfile
+
+    results_txt = "results_test.txt"
+    with open(results_txt, 'w') as out:
+
+        # TODO: Complex regex for deriving the rep id number from the filepath loci
+        rep_id_number = 1
+        out.write('Rep ID #' + str(rep_id_number) + " results:\n\n")
+
+        out.write('There are {0} consistent sites in the observed sequence'.format(np.count_nonzero(O == 'C')) + '\n')
+        out.write('The consistent sites observations occur in window(s)\n{0}'.format(np.where(O == 'C')) + '\n')
+
+        # TODO: Runtime analysis
+        out.write('Runtime for generating observation sequence: {0} seconds'.format((stage1 - start)) + '\n')
+        out.write('Runtime for running Naive HMM: {0} minutes'.format((stage2 - start) / float(60)) + '\n')
+        out.write('Runtime for ' + str(optimization_count) + ' steps of Baum-Welch: {0} minutes'.format((stage3 - start)
+                                                                                                   / float(60)) + '\n')
+
+        # TODO: Windows with >90%  chance of being introgressed according to HMM
+        
+
+
+        # TODO: True Introgressed Windows
+
+        # False Positive Rate:
+        # True Positive Rate (sensitivity):
+        # False Negative Rate (miss rate):
+        # True Negative Rate (specificity):
+
     return np.exp(gamma)
 
 
